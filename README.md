@@ -1,2 +1,9 @@
-# jlpt-grammar-practice
-JLPT Grammer
+# JLPT 文法練習帳
+
+Node.js 22.12 以降で `npm install`、`npm run dev` の順に実行します。`npm run build` は問題データと型を検証し、静的サイトを dist/ に生成します。
+
+## 問題を追加する
+
+src/data/sets/ の JSON ファイルがトップの問題群に対応します。新しい群を作るには既存ファイルを複製し、id・title・questions を編集します。同じ群に追加する場合は questions に項目を追加します。
+
+各問題は群内で一意の id、空欄を {{blank}} で示した prompt、4件の choices、正解の選択肢IDを示す answer、文のポイントを示す point を持ちます。各誤答は reason に合わない理由を記載します。source に元問番号・文型・元の場面を記録し、同じ用法と接続で別の場面を作ります。編集時は既存の問題・選択肢のIDを維持してください。
