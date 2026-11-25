@@ -1,6 +1,6 @@
 import './styles.css'
 
-type Choice = {id:string, text:string, reason?:string}
+type Choice = {id:string, text:string, fills?:string[], reason?:string}
 type Question = {id:string, prompt:string, point:string, choices:Choice[], answer:string}
 type SetData = {id:string, title:string, questions:Question[]}
 type Run = {set:string, order:string[], index:number, answers:Record<string,string>, layouts:Record<string,string[]>}
@@ -73,8 +73,10 @@ function render() {
   bar.setAttribute('aria-label','問題の位置')
   const card=el('section','','sheet')
   const stem=el('h1','','stem')
-  const [before,after]=q.prompt.split('{{blank}}')
-  stem.append(before,el('span','（　　　）','blank'),after)
+  q.prompt.split('{{blank}}').forEach((part, index) => {
+    if (index > 0) stem.append(el('span', '（　　　）', 'blank'))
+    stem.append(part)
+  })
   const options=el('div','','options')
   const feedback=el('section','','feedback')
   feedback.setAttribute('aria-live','polite')
@@ -110,7 +112,14 @@ function render() {
     })
     feedback.replaceChildren()
     feedback.hidden=!picked
-    if(picked) feedback.append(el('h2','文のポイント'),el('p',q.prompt.replace('{{blank}}',q.choices.find(c=>c.id===q.answer)!.text),'complete'),el('p',q.point))
+    if (picked) {
+      const correctChoice = q.choices.find(c => c.id === q.answer)!
+      const fills = correctChoice.fills ?? [correctChoice.text]
+      const complete = q.prompt.split('{{blank}}').map((part, index) =>
+        index === 0 ? part : fills[index - 1] + part
+      ).join('')
+      feedback.append(el('h2', '文のポイント'), el('p', complete, 'complete'), el('p', q.point))
+    }
     next.disabled=!picked
   }
   card.append(el('p','最もよいものを一つ選びなさい。','muted'),stem,options,feedback,nav)

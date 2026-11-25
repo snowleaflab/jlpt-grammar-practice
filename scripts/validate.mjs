@@ -8,9 +8,14 @@ for (const file of readdirSync(dir).filter(f => f.endsWith('.json'))) {
   sets.add(set.id)
   const ids = new Set()
   for (const q of set.questions) {
-    assert(q.id && !ids.has(q.id) && q.prompt.split('{{blank}}').length === 2 && q.point, q.id)
+    assert(q.id && !ids.has(q.id) && q.prompt.split('{{blank}}').length >= 2 && q.point, q.id)
     ids.add(q.id)
     assert(q.choices.length === 4 && new Set(q.choices.map(c => c.id)).size === 4, q.id)
+    const blankCount = q.prompt.split('{{blank}}').length - 1
+    assert(q.choices.every(c => {
+      const fills = c.fills ?? [c.text]
+      return fills.length === blankCount && fills.every(fill => typeof fill === 'string' && fill.trim())
+    }), q.id + ': blank count must match choice fills')
     assert(q.choices.some(c => c.id === q.answer), q.id)
     assert(q.choices.every(c => c.id && c.text && (c.id === q.answer || c.reason)), q.id)
   }
